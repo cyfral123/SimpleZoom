@@ -1,0 +1,7 @@
+bin
+backup
+lib
+obj
+*.zip
+Properties
+.vs
