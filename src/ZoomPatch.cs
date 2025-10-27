@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System;
 using System.Reflection;
 using UnityEngine;
 
@@ -64,6 +65,19 @@ public static class ZoomPatch
         float curFOV = (float)_curFOVField.GetValue(__instance);
         float smoothedFOV = (float)_smoothedFOVField.GetValue(__instance);
         float slowFOVAdjust = (float)_slowFOVAdjustField.GetValue(__instance);
-        _smoothedFOVField.SetValue(__instance, Mathf.Lerp(smoothedFOV, curFOV + slowFOVAdjust + _zoomOffset, Time.deltaTime));  
+        _smoothedFOVField.SetValue(__instance, Mathf.Lerp(smoothedFOV, curFOV + slowFOVAdjust + _zoomOffset, Time.deltaTime));
     }
+
+
+    [HarmonyPatch(typeof(UT_CameraTakeover), "Start")]
+    public static class CameraTakeoverPatch
+    {
+        [HarmonyPrefix]
+        public static bool CoolPerkMachine(UT_CameraTakeover __instance)
+        {
+            __instance.fov = ZoomConfig.CoolPerkMachine;
+            return true;
+        }
+    }
+
 }

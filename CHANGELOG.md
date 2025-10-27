@@ -1,4 +1,12 @@
-# 1.1.0 (Current)
+# 1.1.1 (Current)
+<details>
+  <summary>📜 View </summary>
+
+   - added an configurable fun option that increases fov while using computers/perk machines
+
+</details>  
+
+# 1.1.0
 <details>
   <summary>📜 View </summary>
 
