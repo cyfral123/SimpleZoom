@@ -5,15 +5,13 @@ using UnityEngine;
 [HarmonyPatch]
 public static class ZoomPatch
 {
-    private static float _zoomOffset = 0f;
-    private static float _targetZoomOffset = 0f;
-    private static float _zoomBase = 100f;
+    private static float _zoomOffset = -1f;
+    private static float _targetZoomOffset = -1f;
+    private static float _zoomBase = 60f;
 
     private static readonly FieldInfo _curFOVField;
     private static readonly FieldInfo _smoothedFOVField;
     private static readonly FieldInfo _slowFOVAdjustField;
-    private static float _zoomVelocity = 0f;
-    private static float _fovVelocity = 0f;
 
     static ZoomPatch()
     {
@@ -32,40 +30,40 @@ public static class ZoomPatch
 
         float scroll = Input.mouseScrollDelta.y;
         if (Mathf.Abs(scroll) > 0.01f)
-            _zoomBase = Mathf.Clamp(_zoomBase + scroll * ZoomConfig.GetScrollStep(), 10f, ZoomConfig.GetMaxZoom());
+        {
+            _zoomBase = Mathf.Clamp(_zoomBase + scroll * ZoomConfig.ScrollStep, 10f, ZoomConfig.MaxZoom);
+        }
 
-        KeyCode zoomKey = ZoomConfig.GetZoomKey();
+
+        KeyCode zoomKey = ZoomConfig.ZoomKey;
 
         _targetZoomOffset = Input.GetKey(zoomKey) ? -_zoomBase : 0f;
 
-        _zoomOffset = ZoomConfig.GetSmoothType() switch
-        {
-            ZoomConfig.MathFunction.Exponential => _zoomOffset + (_targetZoomOffset - _zoomOffset) * (1f - Mathf.Exp(-ZoomConfig.GetZoomSpeed() * Time.deltaTime)),
-            ZoomConfig.MathFunction.SmoothDamp => Mathf.SmoothDamp(_zoomOffset, _targetZoomOffset, ref _zoomVelocity, 0.2f),
-            ZoomConfig.MathFunction.Linear => Mathf.Lerp(_zoomOffset, _targetZoomOffset, Time.deltaTime * ZoomConfig.GetZoomSpeed()),
-            _ => throw new System.NotImplementedException()
-        };
+        _zoomOffset = Mathf.Lerp(_zoomOffset, _targetZoomOffset, Time.deltaTime * ZoomConfig.ZoomSpeed);
     }
 
     [HarmonyPatch(typeof(ENT_Player), "FixedUpdate")]
     [HarmonyPrefix]
     public static void FixedUpdatePrefix(ENT_Player __instance)
     {
-        if (__instance == null || __instance.cam == null || __instance.IsLocked() || __instance.IsInputLocked())
+        if (__instance == null || __instance.cam == null || __instance.IsLocked())
+            return;
+
+        float curFOV = (float)_curFOVField.GetValue(__instance);
+        _curFOVField.SetValue(__instance, curFOV + _zoomOffset);
+    }
+
+
+    [HarmonyPatch(typeof(ENT_Player), "FixedUpdate")]
+    [HarmonyPostfix]
+    public static void FixedUpdatePostfix(ENT_Player __instance)
+    {
+        if (__instance == null || __instance.cam == null || __instance.IsLocked())
             return;
 
         float curFOV = (float)_curFOVField.GetValue(__instance);
         float smoothedFOV = (float)_smoothedFOVField.GetValue(__instance);
         float slowFOVAdjust = (float)_slowFOVAdjustField.GetValue(__instance);
-        float targetFOV = curFOV + _zoomOffset + slowFOVAdjust;
-        var finalSmoothed = ZoomConfig.GetSmoothType() switch
-        {
-            ZoomConfig.MathFunction.Exponential => smoothedFOV + (targetFOV - smoothedFOV) * (1f - Mathf.Exp(-ZoomConfig.GetZoomSmoothness() * Time.deltaTime)),
-            ZoomConfig.MathFunction.SmoothDamp => Mathf.SmoothDamp(smoothedFOV, targetFOV, ref _fovVelocity, 0.2f),
-            ZoomConfig.MathFunction.Linear => Mathf.Lerp(smoothedFOV, targetFOV, Time.deltaTime * ZoomConfig.GetZoomSmoothness()),
-             _ => throw new System.NotImplementedException()
-        };
-        _smoothedFOVField.SetValue(__instance, finalSmoothed);
-        __instance.cam.fieldOfView = finalSmoothed;
+        _smoothedFOVField.SetValue(__instance, Mathf.Lerp(smoothedFOV, curFOV + slowFOVAdjust + _zoomOffset, Time.deltaTime));  
     }
 }
