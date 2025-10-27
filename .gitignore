@@ -1,7 +1,6 @@
 bin
-backup
-lib
 obj
-*.zip
-Properties
 .vs
+Properties
+packages
+Libs
