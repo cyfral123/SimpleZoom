@@ -1,7 +1,7 @@
 {
   "name": "SimpleZoom",
-  "version_number": "1.1.1",
+  "version_number": "1.2.0",
   "website_url": "https://github.com/cyfral123/SimpleZoom",
-  "description": "Simple zooming while holding a key",
+  "description": "Smooth configurable zoom for White Knuckle with improved input, wheel control, and optional focus clarity.",
   "dependencies": ["BepInEx-BepInExPack-5.4.2100"]
 }

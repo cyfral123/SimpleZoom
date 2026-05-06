@@ -163,9 +163,6 @@
     <Reference Include="Unity.InputSystem.InGameHints">
       <HintPath>Libs\Unity.InputSystem.InGameHints.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.InputSystem.RebindingUI">
-      <HintPath>Libs\Unity.InputSystem.RebindingUI.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.InternalAPIEngineBridge.002">
       <HintPath>Libs\Unity.InternalAPIEngineBridge.002.dll</HintPath>
     </Reference>
@@ -435,7 +432,4 @@
     </Reference>
   </ItemGroup>
 
-  <Target Name="CopyDllAfterBuild" AfterTargets="Build">
-    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="C:\Users\mypc_z790\AppData\Roaming\com.kesomannen.gale\white-knuckle\profiles\Default\BepInEx\plugins" />
-  </Target>
 </Project>
